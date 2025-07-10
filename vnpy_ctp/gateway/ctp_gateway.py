@@ -26,7 +26,7 @@ from vnpy.trader.object import (
     SubscribeRequest,
 )
 from vnpy.trader.utility import get_folder_path, ZoneInfo
-from vnpy.trader.event import EVENT_TIMER
+from vnpy.trader.event import EVENT_TIMER, EVENT_TICK_UNSUB
 
 from ..api import (
     MdApi,
@@ -191,6 +191,11 @@ class CtpGateway(BaseGateway):
     def subscribe(self, req: SubscribeRequest) -> None:
         """订阅行情"""
         self.md_api.subscribe(req)
+
+    def unsubscribe(self, req: SubscribeRequest) -> None:
+        """取消订阅行情"""
+        self.md_api.unsubscribe(req)
+        self.on_event(EVENT_TICK_UNSUB, TickData(symbol=req.symbol, exchange=req.exchange, datetime=datetime.now(), gateway_name=self.gateway_name))
 
     def send_order(self, req: OrderRequest) -> str:
         """委托下单"""
@@ -393,6 +398,12 @@ class CtpMdApi(MdApi):
         if self.login_status:
             self.subscribeMarketData(req.symbol)
         self.subscribed.add(req.symbol)
+
+    def unsubscribe(self, req: SubscribeRequest) -> None:
+        """取消订阅行情"""
+        if self.login_status:
+            self.unSubscribeMarketData(req.symbol)
+        self.subscribed.remove(req.symbol)
 
     def close(self) -> None:
         """关闭连接"""

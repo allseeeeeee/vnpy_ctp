@@ -36,3 +36,5 @@ __pycache__/
 x64/
 
 .DS_Store
+.idea/
+.vscode/
