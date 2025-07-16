@@ -3,18 +3,18 @@ vnpy:  # VNPY主模块
   branch: siiture
   subtree: true     # ✅ subtree 模式 + 本地源码 -e 安装
 
-vnpy-mongodb:  # VNPY MongoDB模块
-  repo: https://github.com/allseeeeeee/vnpy-mongodb.git
+vnpy_mongodb:  # VNPY MongoDB模块
+  repo: https://github.com/allseeeeeee/vnpy_mongodb.git
   branch: siiture
   subtree: true
 
-vnpy-ctp:  # CTP 网关
-  repo: https://github.com/allseeeeeee/vnpy-ctp.git
+vnpy_ctp:  # CTP 网关
+  repo: https://github.com/allseeeeeee/vnpy_ctp.git
   branch: siiture
   subtree: true
 
-vnpy-tts:  # OpenCTP TTS模拟盘网关
-  repo: https://github.com/allseeeeeee/vnpy-tts.git
+vnpy_tts:  # OpenCTP TTS模拟盘网关
+  repo: https://github.com/allseeeeeee/vnpy_tts.git
   branch: siiture
   subtree: true
 
