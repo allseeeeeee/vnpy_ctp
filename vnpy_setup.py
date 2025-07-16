@@ -11,9 +11,9 @@
 import os
 import subprocess
 import sys
+import urllib.request
 
 import yaml
-import tomlkit
 from pathlib import Path
 
 ROOT = Path(__file__).parent.resolve()
@@ -52,6 +52,41 @@ def run(cmd, shell=True, check=True, timeout=None):
     print("▶", cmd)
     subprocess.run(cmd, shell=shell, check=check, timeout=timeout)
 
+def install_ta_lib_fallback():
+    print("⚠️ 正在从 Gohlke 下载 ta-lib Windows 轮子...")
+
+    # 1. 定义对应 Python 版本的 wheel 名称（这里只举例 cp311）
+    whl_url = "https://github.com/cgohlke/talib-build/releases/download/v0.6.4/ta_lib-0.6.4-cp311-cp311-win_amd64.whl"
+    whl_name = whl_url.split("/")[-1]
+
+    # 2. 下载到本地文件夹
+    download_dir = Path(os.environ["USERPROFILE"]) / "Downloads"
+    whl_path = os.path.join(download_dir, whl_name)
+
+    try:
+        if not os.path.exists(whl_path):
+            urllib.request.urlretrieve(whl_url, whl_path)
+            print(f"✅ 下载完成: {whl_path}")
+        else:
+            print(f"✅ 轮子已存在: {whl_path}")
+
+        # 3. 安装
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", whl_path],
+            check=True
+        )
+        print("✅ ta-lib 安装成功（来自 wheel）")
+
+        # 4. 删除文件（可选）
+        # try:
+        #     os.remove(whl_path)
+        #     print("🧹 已删除临时 wheel 文件")
+        # except Exception as e:
+        #     print(f"⚠️ 删除 wheel 文件失败: {e}")
+
+    except Exception as e:
+        print(f"❌ 下载或安装 ta-lib 失败: {e}")
+
 
 def install(mod_name, version=None, editable=False):
     print(f"🔧 Installing{' in editable mode' if editable else ''}: {mod_name}{version if version else ''}")
@@ -72,9 +107,13 @@ def install(mod_name, version=None, editable=False):
         else:
             print(f"✅ Installed: {mod_name}\n")
     except subprocess.CalledProcessError as e:
-        print(f"❌ Install failed: {mod_name}", e)
-        print(e.stdout)
-        print(e.stderr)
+        if "ERROR: Failed building wheel for ta-lib" in e.stderr:
+            print("⚠️ ta-lib wheel build failed, trying to install from github wheel...")
+            install_ta_lib_fallback()
+        else:
+            print(f"❌ Install failed: {mod_name}", e)
+            print(e.stdout)
+            print(e.stderr)
         return None
 
 
