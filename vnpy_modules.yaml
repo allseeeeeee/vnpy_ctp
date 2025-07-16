@@ -20,7 +20,7 @@ vnpy_tts:  # OpenCTP TTS模拟盘网关
 
 vnpy_portfoliomanager:  # 委托成交记录/交易仓位自动跟踪/每日盈亏实时统计
   repo: https://github.com/allseeeeeee/vnpy_portfoliomanager.git
-  branch: master
+  branch: main
   subtree: true
 
 vnpy_algotrading:    # 算法交易模块
