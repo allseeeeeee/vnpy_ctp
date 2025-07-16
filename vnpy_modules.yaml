@@ -1,0 +1,33 @@
+vnpy:  # VNPY主模块
+  repo: https://github.com/allseeeeeee/vnpy.git
+  branch: siiture
+  subtree: true     # ✅ subtree 模式 + 本地源码 -e 安装
+
+vnpy-mongodb:  # VNPY MongoDB模块
+  repo: https://github.com/allseeeeeee/vnpy-mongodb.git
+  branch: siiture
+  subtree: true
+
+vnpy-ctp:  # CTP 网关
+  repo: https://github.com/allseeeeeee/vnpy-ctp.git
+  branch: siiture
+  subtree: true
+
+vnpy-tts:  # OpenCTP TTS模拟盘网关
+  repo: https://github.com/allseeeeeee/vnpy-tts.git
+  branch: siiture
+  subtree: true
+
+vnpy_portfoliomanager:  # 委托成交记录/交易仓位自动跟踪/每日盈亏实时统计
+  repo: https://github.com/allseeeeeee/vnpy_portfoliomanager.git
+  branch: master
+  subtree: true
+
+vnpy_algotrading:    # 算法交易模块
+  version: ">=4.1.0"
+
+vnpy_spreadtrading:  # 套利交易模块
+  version: ">=4.1.0"
+
+vnpy_tushare:        # tushare 数据服务模块
+  version: ">=4.1.0"

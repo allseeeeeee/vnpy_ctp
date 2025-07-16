@@ -1,0 +1,40 @@
+[project]
+name = "ai-trader-edge"
+version = "0.1.0"
+description = "AI-driven desktop trading system based on VNPY + PyQt"
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    "pyyaml==6.0.2"
+]
+
+[project.optional-dependencies]
+alpha = [
+]
+dev = [
+    "pyinstaller==6.6.0",  # 运行 PyInstaller 时需要安装
+    "mypy",
+    "ipython",
+    "tomlkit"
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+# 开启本地路径依赖支持
+packages = ["ai-trader_edge", "common", "system"]
+include-package-data = true
+
+[tool.setuptools.package-dir]
+"" = "."
+
+[tool.setuptools.dependencies]
+# 本地模块不在这里
+
+
+[project.urls]
+"Homepage" = "https://trader.siiture.com"
+"Source" = "http://git.i.healthcareyun.com/JIANSU/ai-trader-edge.git"
