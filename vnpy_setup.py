@@ -23,6 +23,22 @@ VN_MODULES_DIR = ROOT / VN_MODULES
 VN_MODULES_CONF = ROOT / f"{VN_MODULES}.yaml"
 os.makedirs(VN_MODULES_DIR, exist_ok=True)
 
+class GitContext :
+    def __init__(self, commit=False):
+        self.commit = commit
+    def __enter__(self):
+        if self.commit:
+            print("💡 Commiting current changes...")
+            subprocess.run(["git", "add", "."])
+            subprocess.run(["git", "commit", "-m", "auto commit before subtree"])
+        else:
+            print("💡 Stashing current changes...")
+            subprocess.run(["git", "stash", "push", "-m", "auto stash before subtree"])
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if not self.commit:
+            print("💡 Applying stash...")
+            subprocess.run(["git", "stash", "pop"])
+
 def load_modules():
     if not VN_MODULES_CONF.exists():
         print(f"❌ 配置文件不存在: {VN_MODULES_CONF}")
@@ -32,9 +48,9 @@ def load_modules():
         return yaml.safe_load(f)
 
 
-def run(cmd):
+def run(cmd, shell=True, check=True, timeout=None):
     print("▶", cmd)
-    subprocess.run(cmd, shell=True, check=True)
+    subprocess.run(cmd, shell=shell, check=check, timeout=timeout)
 
 
 def install_editable(mod_name):
@@ -79,13 +95,15 @@ def update_pyproject(modules):
 
 
 def main():
-    modules = load_modules()
-    for name, mod in modules.items():
-        if mod.get("subtree"):
-            update_subtree(name, mod)
-            # install_editable(name)
+    with GitContext(commit=True):
+        modules = load_modules()
+        for name, mod in modules.items():
+            if mod.get("subtree"):
+                update_subtree(name, mod)
+                # install_editable(name)
 
-    update_pyproject(modules)
+        update_pyproject(modules)
+
     print("✅ vnpy_setup 完成")
 
 
