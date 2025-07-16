@@ -53,10 +53,10 @@ def run(cmd, shell=True, check=True, timeout=None):
     subprocess.run(cmd, shell=shell, check=check, timeout=timeout)
 
 
-def install_editable(mod_name):
-    print(f"🔧 Installing in editable mode: {mod_name}")
+def install(mod_name, version=None, editable=False):
+    print(f"🔧 Installing{' in editable mode' if editable else ''}: {mod_name}{version if version else ''}")
     result = subprocess.run(
-        [sys.executable, "-m", "pip", "install", "-e", str(VN_MODULES_DIR / mod_name)],
+        [sys.executable, "-m", "pip", "install", f"{'-e' if editable else ''}", str(VN_MODULES_DIR / mod_name)],
         capture_output=True,
         text=True
     )
@@ -79,30 +79,15 @@ def update_subtree(name, mod):
         run(f"git subtree pull --prefix={VN_MODULES}/{name} {repo} {branch} --squash")
 
 
-def update_pyproject(modules):
-    with open(PYPROJECT, "r", encoding="utf-8") as f:
-        doc = tomlkit.parse(f.read())
-
-    dependencies = doc["project"]["dependencies"]
-    dependencies[:] = [
-        f"{name}{mod['version']}"
-        for name, mod in modules.items()
-        if not mod.get("subtree")
-    ]
-
-    with open(PYPROJECT, "w", encoding="utf-8") as f:
-        f.write(tomlkit.dumps(doc))
-
-
 def main():
     with GitContext(commit=True):
         modules = load_modules()
         for name, mod in modules.items():
             if mod.get("subtree"):
                 update_subtree(name, mod)
-                # install_editable(name)
-
-        update_pyproject(modules)
+                install(name, editable=True) # ➤ 本地模块，-e 安装
+            else:
+                install(name, mod.get("version"), editable=False)  # ➤ 非本地模块，正常 pip 安装
 
     print("✅ vnpy_setup 完成")
 

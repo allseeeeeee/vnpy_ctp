@@ -6,17 +6,18 @@ readme = "README.md"
 requires-python = ">=3.11"
 
 dependencies = [
-    "pyyaml==6.0.2"
+
 ]
 
 [project.optional-dependencies]
 alpha = [
 ]
 dev = [
+    "pyyaml==6.0.2",       # 通过vnpy_setup.py 初始化VNPY环境时需要
+    "tomlkit==0.13.3",
     "pyinstaller==6.6.0",  # 运行 PyInstaller 时需要安装
-    "mypy",
-    "ipython",
-    "tomlkit"
+#    "mypy",
+#    "ipython",
 ]
 
 [build-system]
