@@ -18,8 +18,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.resolve()
 PYPROJECT = ROOT / "pyproject.toml"
-VN_MODULES_DIR = ROOT / "vnpy_modules"
-VN_MODULES_CONF = ROOT / "vnpy_modules.yaml"
+VN_MODULES = "vnpy_modules"
+VN_MODULES_DIR = ROOT / VN_MODULES
+VN_MODULES_CONF = ROOT / f"{VN_MODULES}.yaml"
 os.makedirs(VN_MODULES_DIR, exist_ok=True)
 
 def load_modules():
@@ -52,13 +53,14 @@ def install_editable(mod_name):
 
 
 def update_subtree(name, mod):
-    path = VN_MODULES_DIR / name
     repo = mod["repo"]
     branch = mod.get("branch", "master")
+
+    path = VN_MODULES_DIR / name
     if not path.exists():
-        run(f"git subtree add --prefix={path} {repo} {branch} --squash")
+        run(f"git subtree add --prefix={VN_MODULES}/{name} {repo} {branch} --squash")
     else:
-        run(f"git subtree pull --prefix={path} {repo} {branch} --squash")
+        run(f"git subtree pull --prefix={VN_MODULES}/{name} {repo} {branch} --squash")
 
 
 def update_pyproject(modules):
@@ -81,7 +83,7 @@ def main():
     for name, mod in modules.items():
         if mod.get("subtree"):
             update_subtree(name, mod)
-            install_editable(name)
+            # install_editable(name)
 
     update_pyproject(modules)
     print("✅ vnpy_setup 完成")
