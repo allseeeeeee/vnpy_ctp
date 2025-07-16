@@ -55,17 +55,27 @@ def run(cmd, shell=True, check=True, timeout=None):
 
 def install(mod_name, version=None, editable=False):
     print(f"🔧 Installing{' in editable mode' if editable else ''}: {mod_name}{version if version else ''}")
-    result = subprocess.run(
-        [sys.executable, "-m", "pip", "install", f"{'-e' if editable else ''}", str(VN_MODULES_DIR / mod_name)],
-        capture_output=True,
-        text=True
-    )
-    if result.returncode != 0:
-        print(f"❌ Install failed: {mod_name}")
-        print(result.stderr)
-        sys.exit(1)
-    else:
-        print(f"✅ Installed: {mod_name}\n")
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "pip", "install", f"{'-e' if editable else ''}", str(VN_MODULES_DIR / mod_name)],
+            shell=True,
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding='utf-8'  # ➤ 关键：强制使用 UTF-8 解码
+        )
+        if result.returncode != 0:
+            print(f"❌ Install failed: {mod_name}")
+            print(result.stdout)
+            print(result.stderr)
+            sys.exit(1)
+        else:
+            print(f"✅ Installed: {mod_name}\n")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Install failed: {mod_name}", e)
+        print(e.stdout)
+        print(e.stderr)
+        return None
 
 
 def update_subtree(name, mod):
