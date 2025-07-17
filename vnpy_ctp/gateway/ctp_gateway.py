@@ -29,8 +29,8 @@ from vnpy.trader.utility import get_folder_path, ZoneInfo
 from vnpy.trader.event import EVENT_TIMER, EVENT_TICK_UNSUB
 
 from ..api import (
-    MdApi,
-    TdApi,
+    MdApi,  # noqa
+    TdApi,  # noqa
     THOST_FTDC_OST_NoTradeQueueing,
     THOST_FTDC_OST_PartTradedQueueing,
     THOST_FTDC_OST_AllTraded,
