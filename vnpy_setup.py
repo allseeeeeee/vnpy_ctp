@@ -8,6 +8,7 @@
 作者: LuoJingtian
 日期: 2025/7/15
 """
+import importlib.util
 import os
 import subprocess
 import sys
@@ -88,7 +89,15 @@ def install_ta_lib_fallback():
         print(f"❌ 下载或安装 ta-lib 失败: {e}")
 
 
+def is_module_importable(module_name):
+    return importlib.util.find_spec(module_name) is not None
+
+
 def install(mod_name, version=None, editable=False):
+    if is_module_importable(mod_name):
+        print(f"✅ 模块 {mod_name} 已可导入，跳过安装。")
+        return
+
     print(f"🔧 Installing{' in editable mode' if editable else ''}: {mod_name}{version if version else ''}")
     try:
         result = subprocess.run(
@@ -134,7 +143,7 @@ def main():
         for name, mod in modules.items():
             if mod.get("subtree"):
                 update_subtree(name, mod)
-                install(name, editable=True) # ➤ 本地模块，-e 安装
+                install(name, editable=True)  # ➤ 本地模块，-e 安装
             else:
                 install(name, mod.get("version"), editable=False)  # ➤ 非本地模块，正常 pip 安装
 
@@ -143,7 +152,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    print(ROOT)
-    print(VN_MODULES_DIR)
-    print(VN_MODULES_DIR / "vnpy")
     pass
