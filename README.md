@@ -1,136 +1,88 @@
-# ai-trader-edge
+# VeighNa框架的CTP底层接口
 
-实盘终端（客户端）
+<p align="center">
+  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy-logo.png"/>
+</p>
 
-## 项目结构
-ai-trader-edge/                 ← 主项目根目录（Git 仓库）
-├── ai_trader_edge/             ← 主项目业务代码
-│   ├── __init__.py
-│   ├── main.py                 ← PyQt 主程序入口
-│   └── ...
-│
-├── setup_vnpy.py               ← 根据vnpy-modules.yaml 配置 pyproject.toml, requirements-dev.txt, ai-trader-edge.spec, 管理 subtree
-├── vnpy_modules.yaml           ← ✅ 模块注册中心
-├── vnpy/                       ← ✅ subtree 所有本地子模块源码统一放这里, 由 setup_vnpy.py 配置
-│   ├── vnpy/                   ← 若要本地维护核心模块
-│   ├── vnpy-ctp/               ← 就从社区 clone
-│   ├── vnpy-tts/               ← 可选, 如需OpenCTP模拟盘时安装
-│   └── ...
-├── ai_trader_edge.spec         ← ✅ PyInstaller 打包脚本
-├── pyproject.toml              ← 主项目依赖声明（包含 dev 本地模块依赖）
-├── requirements-dev.txt        ← 仅声明 dev 依赖中的本地模块, -e 模式 只能用requirements-dev.txt, 不能用pyproject.toml
-└── .gitignore
+<p align="center">
+    <img src ="https://img.shields.io/badge/version-6.7.7.2-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
+    <img src ="https://img.shields.io/badge/python-3.10|3.11|3.12|3.13-blue.svg" />
+    <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
+</p>
 
+## 说明
 
-### 下载源码
+基于CTP期货版的6.7.7接口封装开发，接口中自带的是【穿透式实盘环境】的dll文件。
 
-#### 克隆主项目
-```shell
-cd D:\Team\
-git clone http://git.i.healthcareyun.com/JIANSU/ai-trader-edge.git
-```
+## 安装
 
-#### 以 subtree 模式克隆VN.py项目
-> 为避免污染主项目 .git 历史, 使用 subtree模式添加社区模块（因为 --squash）
-> 子模块目录是普通目录，打包、导入都无障碍
-> 支持向上游提交 PR（可从 upstream clone/fork 提交）
+安装环境推荐基于4.0.0版本以上的【[**VeighNa Studio**](https://www.vnpy.com)】。
 
-```shell
-cd vnpy/
-
-git subtree add --prefix vnpy/vnpy https://github.com/vnpy/vnpy.git master --squash
-git subtree add --prefix vnpy/vnpy-ctp https://github.com/vnpy/vnpy-ctp.git master --squash
-git subtree add --prefix vnpy/vnpy-tts https://github.com/vnpy/vnpy-tts.git master --squash
-git subtree add --prefix vnpy/vnpy-mongodb https://github.com/vnpy/vnpy-mongodb.git master --squash
+直接使用pip命令：
 
 ```
-
-
-### 后续更新社区模块
-
-> 更新指定的社区模块
-```shell
-cd vnpy/vnpy-mongodb/
-# 拉取远端变更并合并到当前目录下
-git subtree pull --prefix vnpy/vnpy-mongodb https://github.com/vnpy/vnpy-mongodb.git master --squash -r 
+pip install vnpy_ctp
 ```
 
-> 一键更新所有社区模块
+或者下载源代码后，解压后在cmd中运行：
 
-```powershell
-$baseDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$modules = Get-ChildItem -Path "$baseDir\vnpy_modules" -Directory
-
-foreach ($mod in $modules) {
-    $modName = $mod.Name
-    Write-Host ">>> 更新模块 $modName ..."
-    git subtree pull --prefix="vnpy/$modName" origin master --squash -r
-    Write-Host ">>> 模块 $modName 更新完成"
-}
-
-Write-Host "所有模块更新完毕"
+```
+pip install .
 ```
 
-```bash
-#!/bin/bash
+使用源代码安装时需要进行C++编译，因此在执行上述命令之前请确保已经安装了【Visual Studio（Windows）】、【GCC（Linux）】、【XCode（Mac）】编译器。
 
-BASE_DIR="$(cd "$(dirname "$0")" && pwd)/vnpy_modules"
+如果需要以**开发模式**安装到当前Python环境，可以使用下述命令：
 
-for mod_dir in "$BASE_DIR"/*; do
-  if [ -d "$mod_dir" ]; then
-    mod_name=$(basename "$mod_dir")
-    echo ">>> 更新模块 $mod_name ..."
-    git subtree pull --prefix="vnpy_modules/$mod_name" origin master --squash -r
-    echo ">>> 模块 $mod_name 更新完成"
-  fi
-done
-
-echo "所有模块更新完毕"
+```
+pip install -e . --no-build-isolation --config-settings=build-dir=.\vnpy_ctp\api
 ```
 
+## 使用
 
-### push PR 到社区
-```shell
-git remote add vnpy-mongodb-fork https://github.com/yourname/vnpy-mongodb.git
-git checkout -b your-feature-branch
-git subtree push --prefix=vnpy/vnpy-mongodb vnpy-mongodb-fork your-feature-branch
+以脚本方式启动（script/run.py）：
+
+```
+from vnpy.event import EventEngine
+from vnpy.trader.engine import MainEngine
+from vnpy.trader.ui import MainWindow, create_qapp
+
+from vnpy_ctp import CtpGateway
+
+
+def main():
+    """主入口函数"""
+    qapp = create_qapp()
+
+    event_engine = EventEngine()
+    main_engine = MainEngine(event_engine)
+    main_engine.add_gateway(CtpGateway)
+    
+    main_window = MainWindow(main_engine, event_engine)
+    main_window.showMaximized()
+
+    qapp.exec()
+
+
+if __name__ == "__main__":
+    main()
 ```
 
+## Mac系统支持
 
-## 环境配置
+由于新版本CTP的Mac系统API项目结构发生了较大变化，改为了使用framework目录的结构，因此无法再直接从PyPI下载预编译好的wheel二进制包进行安装。
 
-### 安装 Python 3.11+
+用户需要克隆（或下载）本仓库的源代码到本地后自行编译安装，具体命令如下：
 
+```
+git clone https://github.com/vnpy/vnpy_ctp.git
 
-### 安装开发依赖
+cd vnpy_ctp
 
-```shell
-python -m pip install --upgrade pip
-pip install -e . -i https://mirrors.aliyun.com/pypi/simple
-pip install ".[dev]" -i https://mirrors.aliyun.com/pypi/simple
-# 拉取/更新 + 安装所有模块 + 同步配置
-python -m tools.setup_vnpy
+pip3 install .
 ```
 
-ta_lib 安装失败时的解决办法:
-> fatal error C1083: 无法打开包括文件: “ta_libc.h”: No such file or directory
-> 解决办法:
-```shell
-wget https://github.com/cgohlke/talib-build/releases/download/v0.6.4/ta_lib-0.6.4-cp311-cp311-win_amd64.whl
-pip install "C:\Users\DEV01\Downloads\ta_lib-0.6.4-cp311-cp311-win_amd64.whl"
-pip install . -i https://mirrors.aliyun.com/pypi/simple 
-```
+相关注意事项如下：
 
-### 手动以开发模式安装指定的VNPY模块
-```shell
-pip install -e ./vnpy/vnpy
-pip install -e ./vnpy/vnpy-ctp
-pip install -e ./vnpy/vnpy-tts
-pip install -e ./vnpy/vnpy-mongodb
-```
-
-
-## 打包 PyQt 界面应用
-```shell
-pyinstaller ai-trader-edge.spec
-```
+源码编译需要依赖XCode开发工具中的C++编译器，请务必先安装好。
