@@ -26,7 +26,7 @@ from vnpy.trader.object import (
     SubscribeRequest,
 )
 from vnpy.trader.utility import get_folder_path, ZoneInfo
-from vnpy.trader.event import EVENT_TIMER, EVENT_TICK_UNSUB
+from vnpy.trader.event import EVENT_TIMER, EVENT_TICK_UNSUB, EVENT_TD_CONNECT
 
 from ..api import (
     MdApi,  # noqa
@@ -461,6 +461,7 @@ class CtpTdApi(TdApi):
         """服务器连接断开回报"""
         self.login_status = False
         self.gateway.write_log(f"交易服务器连接断开，原因{reason}")
+        self.gateway.on_event(EVENT_TD_CONNECT, {"status": "Disconnected", "gateway_name": self.gateway_name, "userid": self.userid, "reason": reason})
 
     def onRspAuthenticate(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """用户授权验证回报"""
@@ -482,6 +483,7 @@ class CtpTdApi(TdApi):
             self.sessionid = data["SessionID"]
             self.login_status = True
             self.gateway.write_log("交易服务器登录成功")
+            self.gateway.on_event(EVENT_TD_CONNECT, {"status": "Connected", "gateway_name": self.gateway_name, "userid": self.userid, "frontid": self.frontid, "sessionid": self.sessionid})
 
             # 自动确认结算单
             ctp_req: dict = {
